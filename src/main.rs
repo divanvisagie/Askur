@@ -1,14 +1,9 @@
 use std::env;
 
-use actix_web::{get, App, HttpResponse, HttpServer, Responder};
+use actix_web::{App, HttpResponse, HttpServer, Responder};
 use paperclip::actix::{
     api_v2_operation,
-    // If you prefer the macro syntax for defining routes, import the paperclip macros
-    // get, post, put, delete
-    // use this instead of actix_web::web
-    web::{self, Json},
-    Apiv2Schema,
-    // extension trait for actix_web::App and proc-macro attributes
+    web::{self},
     OpenApiExt,
 };
 
@@ -32,8 +27,9 @@ pub async fn start_server() {
     let _h = HttpServer::new(|| {
         App::new()
             .wrap_api()
-            .service(web::resource("/health").route(web::post().to(health)))
+            .service(web::resource("/health").route(web::get().to(health)))
             .with_json_spec_at("/api/spec")
+            .with_swagger_ui_at("/swag")
             .build()
     })
     .bind((host, port))
@@ -58,7 +54,13 @@ mod tests {
     use actix_web::{test, web, App};
 
     #[test]
-    async fn test_test() {
-        assert_eq!(1, 1);
+    async fn test_health_endpoint() {
+        let mut app =
+            test::init_service(App::new().service(web::resource("/health").to(health))).await;
+
+        let req = test::TestRequest::get().uri("/health").to_request();
+        let resp = test::call_service(&mut app, req).await;
+
+        assert!(resp.status().is_success());
     }
 }
