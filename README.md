@@ -22,10 +22,36 @@ Below is a scenario where a telegram bot sends a `RequestMessage` to Askur. Asku
 
 ```mermaid
 sequenceDiagram
-Telegram ->> Askur: RequestMessage
+participant TB as Telegram Bot
+TB ->> Askur: RequestMessage
 Askur ->> CGPT: RequestMessage
 CGPT ->> Askur: ResponseMessage
-Askur ->> Telegram: ResponseMessage
+Askur ->> TB: ResponseMessage
+```
+
+Because of the universal interface, we could replace a capability with a different implementation and the system would still work.
+
+```mermaid
+sequenceDiagram
+participant TB as Custom Chat Interface
+participant Askur as Askur
+participant SC as Summary Capability
+TB ->> Askur: RequestMessage
+Askur ->> SC: RequestMessage
+SC ->> Askur: ResponseMessage
+Askur ->> TB: ResponseMessage
+```
+
+This provides flexibility in both the user interface as well as the capabilities themselves.
+It would even be possible to implment a speech to text interface which could then be used to interact with the system.
+
+```mermaid
+sequenceDiagram
+participant STT as Speech to Text
+STT ->> Askur: RequestMessage
+Askur ->> CGPT: RequestMessage
+CGPT ->> Askur: ResponseMessage
+Askur ->> STT: ResponseMessage
 ```
 
 
